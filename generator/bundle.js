@@ -27608,7 +27608,109 @@
     }
   };
 
+  // node_modules/three/examples/jsm/helpers/VertexNormalsHelper.js
+  var _v1 = new Vector3();
+  var _v2 = new Vector3();
+  var _normalMatrix2 = new Matrix3();
+
+  // node_modules/three/examples/jsm/utils/BufferGeometryUtils.js
+  function mergeVertices(geometry, tolerance = 1e-4) {
+    tolerance = Math.max(tolerance, Number.EPSILON);
+    const hashToIndex = {};
+    const indices = geometry.getIndex();
+    const positions = geometry.getAttribute("position");
+    const vertexCount = indices ? indices.count : positions.count;
+    let nextIndex = 0;
+    const attributeNames = Object.keys(geometry.attributes);
+    const attrArrays = {};
+    const morphAttrsArrays = {};
+    const newIndices = [];
+    const getters = ["getX", "getY", "getZ", "getW"];
+    for (let i = 0, l = attributeNames.length; i < l; i++) {
+      const name = attributeNames[i];
+      attrArrays[name] = [];
+      const morphAttr = geometry.morphAttributes[name];
+      if (morphAttr) {
+        morphAttrsArrays[name] = new Array(morphAttr.length).fill().map(() => []);
+      }
+    }
+    const decimalShift = Math.log10(1 / tolerance);
+    const shiftMultiplier = Math.pow(10, decimalShift);
+    for (let i = 0; i < vertexCount; i++) {
+      const index = indices ? indices.getX(i) : i;
+      let hash = "";
+      for (let j = 0, l = attributeNames.length; j < l; j++) {
+        const name = attributeNames[j];
+        const attribute = geometry.getAttribute(name);
+        const itemSize = attribute.itemSize;
+        for (let k = 0; k < itemSize; k++) {
+          hash += `${~~(attribute[getters[k]](index) * shiftMultiplier)},`;
+        }
+      }
+      if (hash in hashToIndex) {
+        newIndices.push(hashToIndex[hash]);
+      } else {
+        for (let j = 0, l = attributeNames.length; j < l; j++) {
+          const name = attributeNames[j];
+          const attribute = geometry.getAttribute(name);
+          const morphAttr = geometry.morphAttributes[name];
+          const itemSize = attribute.itemSize;
+          const newarray = attrArrays[name];
+          const newMorphArrays = morphAttrsArrays[name];
+          for (let k = 0; k < itemSize; k++) {
+            const getterFunc = getters[k];
+            newarray.push(attribute[getterFunc](index));
+            if (morphAttr) {
+              for (let m = 0, ml = morphAttr.length; m < ml; m++) {
+                newMorphArrays[m].push(morphAttr[m][getterFunc](index));
+              }
+            }
+          }
+        }
+        hashToIndex[hash] = nextIndex;
+        newIndices.push(nextIndex);
+        nextIndex++;
+      }
+    }
+    const result = geometry.clone();
+    for (let i = 0, l = attributeNames.length; i < l; i++) {
+      const name = attributeNames[i];
+      const oldAttribute = geometry.getAttribute(name);
+      const buffer = new oldAttribute.array.constructor(attrArrays[name]);
+      const attribute = new BufferAttribute(buffer, oldAttribute.itemSize, oldAttribute.normalized);
+      result.setAttribute(name, attribute);
+      if (name in morphAttrsArrays) {
+        for (let j = 0; j < morphAttrsArrays[name].length; j++) {
+          const oldMorphAttribute = geometry.morphAttributes[name][j];
+          const buffer2 = new oldMorphAttribute.array.constructor(morphAttrsArrays[name][j]);
+          const morphAttribute = new BufferAttribute(buffer2, oldMorphAttribute.itemSize, oldMorphAttribute.normalized);
+          result.morphAttributes[name][j] = morphAttribute;
+        }
+      }
+    }
+    result.setIndex(newIndices);
+    return result;
+  }
+
   // src/generator.js
+  var removeFaces = (() => {
+    const vertex = new THREE.Vector3();
+    const normal = new THREE.Vector3();
+    return (mesh, direction) => {
+      const index = Array.from(mesh.geometry.index.array);
+      const newIndex = [];
+      for (let i = 0; i < index.length; i += 3) {
+        vertex.fromBufferAttribute(mesh.geometry.attributes.position, index[i]);
+        vertex.normalize();
+        normal.fromBufferAttribute(mesh.geometry.attributes.normal, index[i]);
+        const pointingTowards = Math.sign(vertex.x) === Math.sign(normal.x) && Math.sign(vertex.y) === Math.sign(normal.y) && Math.sign(vertex.z) === Math.sign(normal.z);
+        if (direction === 1 && pointingTowards || direction === -1 && !pointingTowards) {
+          newIndex.push(index[i], index[i + 1], index[i + 2]);
+        }
+      }
+      mesh.geometry.setIndex(newIndex);
+    };
+  })();
   async function generate(config) {
     const map = config.image ? new THREE.Texture(config.image) : null;
     if (config.image) {
@@ -27642,7 +27744,7 @@
         });
       });
       const shapes = paths.flatMap((p) => p.toShapes());
-      const geo = new THREE.ExtrudeGeometry(shapes, { curveSegments: 3, depth: 1, bevelEnabled: false });
+      const geo = new THREE.ExtrudeGeometry(shapes, { curveSegments: 3, depth: radius * 1, bevelEnabled: false });
       geo.computeBoundingBox();
       const size = new THREE.Vector3();
       geo.boundingBox.getSize(size);
@@ -27665,7 +27767,11 @@
     const innerSphere = makeSphere(radius * 0.99);
     const photoSphere = CSG.subtract(CSG.subtract(outerSphere, innerSphere), hole2);
     photoSphere.material.transparent = true;
+    photoSphere.material.wireframe = false;
     photoSphere.name = "photoSphere";
+    photoSphere.geometry = mergeVertices(photoSphere.geometry);
+    removeFaces(photoSphere, -1);
+    window.photoSphere = photoSphere;
     outerSphere.scale.setScalar(1.02);
     outerSphere.updateMatrix();
     innerSphere.scale.setScalar(1.01);
@@ -27673,12 +27779,15 @@
     const occluder = CSG.subtract(CSG.subtract(outerSphere, innerSphere), hole2);
     occluder.name = "occluder";
     occluder.material = new THREE.MeshBasicMaterial({ colorWrite: false, wireframe: false });
+    occluder.geometry = mergeVertices(occluder.geometry);
+    removeFaces(occluder, 1);
+    window.occluder = occluder;
     const innerHole = hole2.clone();
     innerHole.scale.setScalar(0.95);
     innerHole.updateMatrix();
     const hollowHole = CSG.subtract(hole2, innerHole);
     const halfHole = CSG.subtract(hollowHole, makeSphere(radius * 0.99));
-    const shell = CSG.subtract(makeSphere(radius * 10), makeSphere(radius * 1.01));
+    const shell = CSG.subtract(makeSphere(radius * 10), makeSphere(radius * 1.025));
     const rim = CSG.subtract(halfHole, shell);
     rim.name = "rim";
     const group = new THREE.Group();
