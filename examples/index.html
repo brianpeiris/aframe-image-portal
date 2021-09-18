@@ -14,11 +14,11 @@
         <a-asset-item id="spring" src="spring.glb"></a-asset-item>
         <a-asset-item id="transparent" src="transparent.glb"></a-asset-item>
       </a-assets>
-      <a-camera position="0 1.2 0"></a-camera>
+      <a-camera position="0 1.2 0" wasd-controls="acceleration: 20"></a-camera>
       <a-entity position="0 1.2 -1" rotation="0 0 0" image-portal="src: #spring"></a-entity>
       <a-entity position="-1 1.2 0" rotation="0 90 0" image-portal="src: #fall"></a-entity>
       <a-entity position="1 1.2 0" rotation="0 -90 0" image-portal="src: #winter"></a-entity>
-      <a-entity position="0 1.2 1" rotation="0 180 0" image-portal="src: #transparent"></a-entity>
+      <a-entity position="0 1.2 1.5" rotation="0 180 0" image-portal="src: #transparent"></a-entity>
     </a-scene>
   </body>
 </html>

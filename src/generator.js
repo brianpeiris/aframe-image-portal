@@ -3,12 +3,18 @@ import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter";
 import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader";
 
 async function generate(config) {
-  const map = new THREE.Texture(config.image);
-  map.format = config.isJpeg ? THREE.RGBFormat : THREE.RGBAFormat;
-  map.needsUpdate = true;
+  const map = config.image ? new THREE.Texture(config.image) : null;
+  if (config.image) {
+    map.format = config.isJpeg ? THREE.RGBFormat : THREE.RGBAFormat;
+    map.needsUpdate = true;
+  }
 
-  function makeSphere(r, map = null) {
-    return new THREE.Mesh(new THREE.SphereGeometry(r, 32, 16), new THREE.MeshBasicMaterial({ map }));
+  function makeSphere(r, map) {
+    const materialConfig = {}
+    if (map) {
+      materialConfig.map = map;
+    }
+    return new THREE.Mesh(new THREE.SphereGeometry(r, 32, 16), new THREE.MeshBasicMaterial(materialConfig));
   }
 
   const radius = config.diameter / 2;
@@ -64,7 +70,7 @@ async function generate(config) {
   const innerSphere = makeSphere(radius * 0.99);
 
   const photoSphere = CSG.subtract(CSG.subtract(outerSphere, innerSphere), hole);
-  photoSphere.material.transparent = !config.isJpeg;
+  photoSphere.material.transparent = true;
   photoSphere.name = "photoSphere";
 
   outerSphere.scale.setScalar(1.02);
@@ -121,7 +127,7 @@ async function generateFromInputs(e) {
 
   await tick();
 
-  const img = await loadImage(URL.createObjectURL(image.files[0]));
+  const img = image.files.length ? await loadImage(URL.createObjectURL(image.files[0])) : null;
   const diameter = parseFloat(diameterInput.value);
 
   const glbUrl = await generate({
@@ -132,12 +138,12 @@ async function generateFromInputs(e) {
     holeRoughness: parseFloat(holeRoughness.value),
     holeMetalness: parseFloat(holeMetalness.value),
     image: img,
-    isJpeg: image.files[0].type === "image/jpeg",
+    isJpeg: image.files.length ? image.files[0].type === "image/jpeg" : false,
   });
 
   download.href = glbUrl;
 
-  portal.setAttribute("image-portal", { src: glbUrl });
+  portal.setAttribute("image-portal", { src: glbUrl, autoReparent: false });
 
   camera.removeAttribute("look-controls");
   camera.setAttribute("position", `0 0 ${diameter * 2}`);
@@ -150,6 +156,8 @@ async function generateFromInputs(e) {
 }
 
 function updateHoleShape() {
+  holeShapeLabel.style.display = hole.value !== "custom" ? "none" : "block";
+  holeShape.style.display = hole.value !== "custom" ? "none" : "block";
   holeShape.disabled = hole.value !== "custom";
 }
 
@@ -157,7 +165,8 @@ function main() {
   updateHoleShape();
   inputs.addEventListener("submit", generateFromInputs);
   hole.addEventListener("change", updateHoleShape);
-  grid.object3D.add(new THREE.GridHelper());
+  const gridHelper = new THREE.GridHelper();
+  grid.object3D.add(gridHelper);
 }
 
 main();

@@ -12,7 +12,7 @@
     <div id="sidebar">
       <h1>Image Portal Generator</h1>
       <form id="inputs">
-        <label>Image:</label><input id="image" type="file" required />
+        <label>Image:</label><input id="image" type="file" required accept=".jpg,.jpeg,.png" />
         <label>Diameter:</label><input id="diameterInput" value="2" />
         <label>Hole:</label>
         <select id="hole">
@@ -20,19 +20,19 @@
           <option>square</option>
           <option>custom</option>
         </select>
+        <label id="holeShapeLabel">Hole shape:</label><input id="holeShape" type="file" accept=".svg" required />
         <label>Hole size:</label><input id="holeSize" value="0.5" />
         <label>Hole color:</label><input id="holeColor" type="color" value="#ffffff" />
         <label>Hole roughness:</label><input id="holeRoughness" type="range" max="1" step="0.01" value="1" />
         <label>Hole metalness:</label><input id="holeMetalness" type="range" max="1" step="0.01" value="0" />
-        <label>Hole shape:</label><input id="holeShape" type="file" required />
         <button id="generateButton">Generate</button>
       </form>
       <a id="download" download="image-portal.glb" href="">Download GLB</a>
     </div>
     <a-scene embedded background="color: grey;">
-      <a-camera id="camera" position="0 0 0" wasd-controls="fly: true; acceleration: 20;"></a-camera>
-      <a-entity id="portal"></a-entity>
+      <a-camera id="camera" position="0 1 0" wasd-controls="fly: true; acceleration: 20;"></a-camera>
       <a-entity id="grid"></a-entity>
+      <a-entity id="portal"></a-entity>
     </a-scene>
     <script src="bundle.js"></script>
   </body>

@@ -1,7 +1,6 @@
 {
   "private": true,
   "scripts": {
-    "start": "esbuild --sourcemap --bundle --watch --outfile=dist/aframe-image-portal.js src/index.js",
     "start:generator": "esbuild --sourcemap --bundle --watch --outfile=generator/bundle.js src/generator.js"
   },
   "devDependencies": {
