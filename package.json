@@ -1,10 +1,16 @@
 {
   "name": "aframe-image-portal",
   "version": "0.0.1",
+  "description": "aframe-image-portal lets you generate and display portal effects in AR a-frame scene.",
+  "keywords": ["aframe", "webxr", "ar", "portal"],
+  "homepage": "https://github.com/brianpeiris/aframe-image-portal#readme",
+  "bugs": { "url": "https://github.com/brianpeiris/aframe-image-portal/issues" },
+  "license": "MIT",
   "main": "src/index.js",
   "scripts": {
     "start:generator": "esbuild --sourcemap --bundle --watch --outfile=generator/bundle.js src/generator.js"
   },
+  "files": ["!examples/"],
   "devDependencies": {
     "aframe": "^1.2.0",
     "esbuild": "^0.12.28",
