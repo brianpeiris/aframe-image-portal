@@ -4,6 +4,8 @@ The image-portal component allows you to create "portal" effects in AR scenes, w
 
 The image-portal component only takes care of displaying the portal, you can use the [generator tool](https://brianpeiris.github.io/aframe-image-portal/generator/) to create portals and download them as GLB (glTF) files.
 
+Visit the [examples](https://brianpeiris.github.io/aframe-image-portal/examples) on a device that supports WebXR to see the effect in AR.
+
 ## API
 
 | Property | Description | Default Value |
@@ -17,15 +19,15 @@ The image-portal component only takes care of displaying the portal, you can use
 
 ```html
 <head>
-	<script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-	<script src="https://unpkg.com/aframe-image-portal@latest"></script>
+  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+  <script src="https://unpkg.com/aframe-image-portal@latest"></script>
 </head>
 
 <body>
   <a-scene>
-		<a-assets>
-			<a-asset-item id="portal" src="portal.glb"></a-asset-item>
-		</a-assets>
+    <a-assets>
+      <a-asset-item id="portal" src="portal.glb"></a-asset-item>
+    </a-assets>
     <a-entity image-portal="src: #portal"></a-entity>
   </a-scene>
 </body>
