@@ -8,8 +8,5 @@
     "aframe": "^1.2.0",
     "esbuild": "^0.12.28",
     "three-csg-ts": "^3.1.9"
-  },
-  "dependencies": {
-    "@flatten-js/polygon-offset": "^1.1.3"
   }
 }
