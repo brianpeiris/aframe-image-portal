@@ -3,22 +3,43 @@
   <head>
     <meta charset="UTF-8" />
     <title></title>
-    <script src="../node_modules/aframe/dist/aframe.min.js"></script>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://unpkg.com/aframe-mesh-particles-component@0.5.0/aframe-mesh-particles-component.js"></script>
     <script src="../src/index.js"></script>
   </head>
   <body>
-    <a-scene background="color: grey">
+    <a-scene background="color: grey" renderer="sortObjects: false">
       <a-assets>
         <a-asset-item id="fall" src="fall.glb"></a-asset-item>
         <a-asset-item id="winter" src="winter.glb"></a-asset-item>
         <a-asset-item id="spring" src="spring.glb"></a-asset-item>
         <a-asset-item id="transparent" src="transparent.glb"></a-asset-item>
+        <a-asset-item id="leaf" src="leaf.glb"></a-asset-item>
       </a-assets>
+      <a-entity rotation="0 90 0" >
       <a-camera position="0 1.2 0" wasd-controls="acceleration: 20"></a-camera>
+      </a-entity>
+      <a-entity position="-3 1.2 0" rotation="0 90 0" image-portal="src: #fall"></a-entity>
       <a-entity position="0 1.2 -1" rotation="0 0 0" image-portal="src: #spring"></a-entity>
-      <a-entity position="-1 1.2 0" rotation="0 90 0" image-portal="src: #fall"></a-entity>
       <a-entity position="1 1.2 0" rotation="0 -90 0" image-portal="src: #winter"></a-entity>
-      <a-entity position="0 1.2 1.5" rotation="0 180 0" image-portal="src: #transparent"></a-entity>
+      <a-entity position="0 1.2 1" rotation="0 180 0" image-portal="src: #transparent"></a-entity>
+      <a-gltf-model
+        src="#leaf"
+        scale="0.2 0.2 0.2"
+        position="-3 4 0"
+        rotation="90 0 0"
+        mesh-particles="
+        lifeTime: 1..8;
+        spawnRate: 100;
+        color: yellow,red;
+        acceleration: 0 0 0;
+        velocity: 0 0 1..0 0 5;
+        radialVelocity: 0;
+        radialPosition: 0.1..10;
+        radialType: circle;
+        rotation: 0 0 0,180 180 180;
+        "
+      ></a-gltf-model>
     </a-scene>
   </body>
 </html>

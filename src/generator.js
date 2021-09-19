@@ -4,7 +4,7 @@ import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader";
 import { VertexNormalsHelper } from "three/examples/jsm/helpers/VertexNormalsHelper";
 import { mergeVertices } from "three/examples/jsm/utils/BufferGeometryUtils";
 
-const removeFaces = (() => {
+const cleanupFaces = (() => {
   const vertex = new THREE.Vector3();
   const normal = new THREE.Vector3();
   return (mesh, direction) => {
@@ -14,56 +14,56 @@ const removeFaces = (() => {
       vertex.fromBufferAttribute(mesh.geometry.attributes.position, index[i]);
       vertex.normalize();
       normal.fromBufferAttribute(mesh.geometry.attributes.normal, index[i]);
-      const pointingTowards = 
-        Math.sign(vertex.x) === Math.sign(normal.x) &&
-        Math.sign(vertex.y) === Math.sign(normal.y) &&
-        Math.sign(vertex.z) === Math.sign(normal.z)
-      if (direction === 1 && pointingTowards || direction === -1 && !pointingTowards) {
-        newIndex.push(
-          index[i],
-          index[i + 1],
-          index[i + 2],
-        )
+      const angle = (vertex.angleTo(normal) * 180) / Math.PI;
+      if ((direction === 1 && angle < 30) || (direction === -1 && angle > 150)) {
+        newIndex.push(index[i], index[i + 1], index[i + 2]);
       }
     }
     mesh.geometry.setIndex(newIndex);
   };
 })();
 
+function makeSphere(r, map) {
+  const materialConfig = {};
+  if (map) {
+    materialConfig.map = map;
+  }
+  return new THREE.Mesh(new THREE.SphereGeometry(r, 32, 16), new THREE.MeshBasicMaterial(materialConfig));
+}
+
+function makeCylinder(size, zOffset) {
+  const cyl = new THREE.Mesh(
+    new THREE.CylinderGeometry(size, size, size, 16),
+    new THREE.MeshBasicMaterial({ wireframe: false })
+  );
+  cyl.rotation.x = Math.PI / 2;
+  cyl.position.z = zOffset;
+  cyl.updateMatrix();
+  return cyl;
+}
+
 async function generate(config) {
   const map = config.image ? new THREE.Texture(config.image) : null;
-  // const map = new THREE.TextureLoader().load("/winter.jpg");
   if (config.image) {
     map.format = config.isJpeg ? THREE.RGBFormat : THREE.RGBAFormat;
     map.needsUpdate = true;
   }
 
-  function makeSphere(r, map) {
-    const materialConfig = {}
-    if (map) {
-      materialConfig.map = map;
-    }
-    return new THREE.Mesh(new THREE.SphereGeometry(r, 32, 16), new THREE.MeshBasicMaterial(materialConfig));
-  }
-
   const radius = config.diameter / 2;
-
-  const holeMat = new THREE.MeshStandardMaterial({
-    color: config.holeColor,
-    roughness: config.holeRoughness,
-    metalness: config.holeMetalness,
-  });
 
   let hole;
   if (config.hole === "circle") {
     hole = new THREE.Mesh(
       new THREE.CylinderGeometry(config.holeSize * 0.5, config.holeSize * 0.5, radius * 1, 32),
-      holeMat
+      new THREE.MeshBasicMaterial()
     );
     hole.rotation.y = Math.PI / 8;
     hole.rotation.x = Math.PI / 2;
   } else if (config.hole === "square") {
-    hole = new THREE.Mesh(new THREE.BoxGeometry(config.holeSize, config.holeSize, radius * 1), holeMat);
+    hole = new THREE.Mesh(
+      new THREE.BoxGeometry(config.holeSize, config.holeSize, radius * 1),
+      new THREE.MeshBasicMaterial()
+    );
   } else {
     const paths = await new Promise((resolve) => {
       new SVGLoader().load(config.hole, (svg) => {
@@ -74,25 +74,25 @@ async function generate(config) {
     const geo = new THREE.ExtrudeGeometry(shapes, { curveSegments: 3, depth: radius * 1, bevelEnabled: false });
 
     geo.computeBoundingBox();
+    geo.center();
+
+    geo.computeBoundingBox();
     const size = new THREE.Vector3();
     geo.boundingBox.getSize(size);
 
     const mat4 = new THREE.Matrix4();
     if (size.x > size.y) {
-      mat4.makeScale(config.holeSize / size.x, (config.holeSize / size.x) * (size.y / size.x), radius * 1);
+      mat4.makeScale(config.holeSize / size.x, (config.holeSize / size.x) * (size.y / size.x), 1);
     } else {
-      mat4.makeScale((config.holeSize / size.y) * (size.x / size.y), config.holeSize / size.y, radius * 1);
+      mat4.makeScale((config.holeSize / size.y) * (size.x / size.y), config.holeSize / size.y, 1);
     }
     geo.applyMatrix(mat4);
     mat4.makeScale(1, -1, -1);
     geo.applyMatrix(mat4);
 
-    geo.computeBoundingBox();
-    geo.center();
-
-    hole = new THREE.Mesh(geo, holeMat);
+    hole = new THREE.Mesh(geo, new THREE.MeshBasicMaterial());
   }
-  hole.position.z = radius * 1;
+  hole.position.z = radius;
   hole.updateMatrix();
 
   const outerSphere = makeSphere(radius, map);
@@ -103,12 +103,7 @@ async function generate(config) {
   photoSphere.material.wireframe = false;
   photoSphere.name = "photoSphere";
   photoSphere.geometry = mergeVertices(photoSphere.geometry);
-  removeFaces(photoSphere, -1);
-  window.photoSphere = photoSphere;
-
-  // photoSphere.geometry.computeVertexNormals();
-  // const helper = new VertexNormalsHelper(photoSphere, 0.1);
-  // AFRAME.scenes[0].object3D.add(helper);
+  cleanupFaces(photoSphere, -1);
 
   outerSphere.scale.setScalar(1.02);
   outerSphere.updateMatrix();
@@ -118,33 +113,26 @@ async function generate(config) {
   occluder.name = "occluder";
   occluder.material = new THREE.MeshBasicMaterial({ colorWrite: false, wireframe: false });
   occluder.geometry = mergeVertices(occluder.geometry);
-  removeFaces(occluder, 1);
-  window.occluder = occluder;
+  cleanupFaces(occluder, 1);
 
-  // occluder.geometry.computeVertexNormals();
-  // const helper = new VertexNormalsHelper(occluder, 0.1);
-  // AFRAME.scenes[0].object3D.add(helper);
-
-  const innerHole = hole.clone();
-  innerHole.scale.setScalar(0.95);
-  innerHole.updateMatrix();
-  const hollowHole = CSG.subtract(hole, innerHole);
-  const halfHole = CSG.subtract(hollowHole, makeSphere(radius * 0.99));
-  const shell = CSG.subtract(makeSphere(radius * 10), makeSphere(radius * 1.025));
-  const rim = CSG.subtract(halfHole, shell);
+  const shell = CSG.subtract(makeSphere(radius * 1.018), makeSphere(radius * 0.9999));
+  const rimSphere = CSG.subtract(shell, hole);
+  const cylinder = CSG.subtract(
+    makeCylinder(radius * 10, radius),
+    makeCylinder(config.holeSize * (config.hole === "circle" ? 0.6 : 1.2), radius)
+  );
+  const rim = CSG.subtract(rimSphere, cylinder);
+  rim.material = new THREE.MeshStandardMaterial({
+    color: config.holeColor,
+    roughness: config.holeRoughness,
+    metalness: config.holeMetalness,
+  });
   rim.name = "rim";
-
-  // innerHole.position.z = radius + 0.2;
-  // AFRAME.scenes[0].object3D.add(innerHole);
-  // AFRAME.scenes[0].object3D.add(hole);
 
   const group = new THREE.Group();
   group.add(occluder);
   group.add(photoSphere);
   group.add(rim);
-
-  // AFRAME.scenes[0].object3D.add(group);
-  // return null;
 
   return new Promise((resolve) => {
     new GLTFExporter().parse(

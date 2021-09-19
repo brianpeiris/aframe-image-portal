@@ -5,7 +5,7 @@
     <title></title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="generator.css" />
-    <script src="../node_modules/aframe/dist/aframe.min.js"></script>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="../src/index.js"></script>
   </head>
   <body>
@@ -25,11 +25,20 @@
         <label>Hole color:</label><input id="holeColor" type="color" value="#ffffff" />
         <label>Hole roughness:</label><input id="holeRoughness" type="range" max="1" step="0.01" value="1" />
         <label>Hole metalness:</label><input id="holeMetalness" type="range" max="1" step="0.01" value="0" />
-        <button id="generateButton" accesskey="e">Generate</button>
+        <button id="generateButton">Generate</button>
       </form>
       <a id="download" download="image-portal.glb" href="">Download GLB</a>
+      <p>
+        <strong>Image:</strong> Ideally, an equirectangular image. You can also use transparent images.<br />
+        <strong>Hole:</strong> Either a circle, square, or a custom SVG shape.
+      </p>
+      <div>
+      <a href="https://brianpeiris.github.io/aframe-image-portal/examples" target="_blank">Examples</a>
+      <a href="https://github.com/brianpeiris/aframe-image-portal" target="_blank">GitHub</a>
+      <a href="https://www.npmjs.com/package/aframe-image-portal" target="_blank">NPM</a>
+      </div>
     </div>
-    <a-scene embedded background="color: grey;">
+    <a-scene id="scene" embedded background="color: grey;">
       <a-camera id="camera" position="0 1 0" wasd-controls="fly: true; acceleration: 20;"></a-camera>
       <a-entity id="grid"></a-entity>
       <a-entity id="portal"></a-entity>

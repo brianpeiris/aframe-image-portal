@@ -1,5 +1,4 @@
-html,
-body {
+html, body {
   height: 100%;
 }
 body {
@@ -7,17 +6,33 @@ body {
   display: flex;
   font-family: sans-serif;
 }
+@media (max-width : 600px) {
+  html, body {
+    height: auto;
+  }
+  body {
+    flex-direction: column;
+  }
+  a-scene#scene {
+    height: 400px;
+    flex: none;
+  }
+  #sidebar {
+    align-self: center;
+  }
+}
 #sidebar {
   margin: 1em;
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-h1 {
-  text-align: center;
+  max-width: 400px;
 }
 a-scene {
   flex: 1;
+}
+h1 {
+  text-align: center;
 }
 #inputs {
   display: grid;

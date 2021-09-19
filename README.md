@@ -2,7 +2,7 @@
 
 The image-portal component allows you to create "portal" effects in AR scenes, where an image can be displayed on the inside of a sphere, with a hole in it which you can enter through. The portal effect is achieved by making the outside of the sphere invisible.
 
-The image-portal component only takes care of displaying the portal, you can use the [generator](https://brianpeiris.github.io/aframe-image-portal/generator/) tool to create portals and download them as GLB (glTF) files.
+The image-portal component only takes care of displaying the portal, you can use the [generator tool](https://brianpeiris.github.io/aframe-image-portal/generator/) to create portals and download them as GLB (glTF) files.
 
 ## API
 
