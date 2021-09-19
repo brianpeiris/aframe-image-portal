@@ -1,11 +1,15 @@
 {
   "private": true,
   "scripts": {
-    "start:generator": "esbuild --sourcemap --bundle --watch --outfile=generator/bundle.js src/generator.js"
+    "start:generator": "esbuild --sourcemap --bundle --watch --outfile=generator/bundle.js src/generator.js",
+    "start:inset": "esbuild --sourcemap --bundle --watch --outfile=inset/inset-bundle.js inset/index.js"
   },
   "devDependencies": {
     "aframe": "^1.2.0",
     "esbuild": "^0.12.28",
     "three-csg-ts": "^3.1.9"
+  },
+  "dependencies": {
+    "@flatten-js/polygon-offset": "^1.1.3"
   }
 }

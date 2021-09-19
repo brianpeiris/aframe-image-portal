@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title></title>
+    <style>
+      #svgs {
+        position: absolute;
+        top: 0;
+      }
+      svg {
+        width: 400px;
+        height: 400px;
+      }
+    </style>
+    <script src="../node_modules/aframe/dist/aframe.min.js"></script>
+    <script src="../node_modules/three/examples/js/loaders/SVGLoader.js"></script>
+  </head>
+  <body>
+    <a-scene>
+      <a-camera position="0 0 2" wasd-controls="fly: true; acceleration: 20"></a-camera>
+    </a-scene>
+    <div id="svgs"></div>
+    <script src="inset-bundle.js"></script>
+  </body>
+</html>
