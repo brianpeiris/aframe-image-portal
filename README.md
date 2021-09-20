@@ -1,10 +1,12 @@
-# aframe-image-portal
+# aframe-image-portal [![npm badge](https://img.shields.io/npm/v/aframe-image-portal?color=blue&label=npm)](https://www.npmjs.com/package/aframe-image-portal)
 
 The image-portal component allows you to create "portal" effects in AR scenes, where an image can be displayed on the inside of a sphere, with a hole in it which you can enter through. The portal effect is achieved by making the outside of the sphere invisible.
 
 The image-portal component only takes care of displaying the portal, you can use the [generator tool](https://brianpeiris.github.io/aframe-image-portal/generator/) to create portals and download them as GLB (glTF) files.
 
 Visit the [examples](https://brianpeiris.github.io/aframe-image-portal/examples) on a device that supports WebXR to see the effect in AR.
+
+https://user-images.githubusercontent.com/79419/133947920-6f747b0a-1613-4142-8e37-b36ed777ed95.mp4
 
 ## API
 
