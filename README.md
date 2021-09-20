@@ -6,6 +6,8 @@ The image-portal component only takes care of displaying the portal, you can use
 
 Visit the [examples](https://brianpeiris.github.io/aframe-image-portal/examples) on a device that supports WebXR to see the effect in AR.
 
+https://user-images.githubusercontent.com/79419/133947920-6f747b0a-1613-4142-8e37-b36ed777ed95.mp4
+
 ## API
 
 | Property | Description | Default Value |
